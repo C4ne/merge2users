@@ -26,6 +26,9 @@ namespace tool_merge2users\forms;
 
 defined('MOODLE_INTERNAL') || die();
 
+use html_writer;
+use moodle_exception;
+use moodle_url;
 use moodleform;
 
 /**
@@ -38,27 +41,14 @@ use moodleform;
 class confirm_selection_form extends moodleform {
 
     /**
-     * Form definition. Abstract method - always override!
+     * Form definition.
+     *
+     * @throws moodle_exception
      */
     protected function definition() {
         global $DB;
         $mform = $this->_form;
 
-        // First checkbox: Confirm settings.
-        $groupelements = array();
-        $settingsurl = new \moodle_url('/admin/settings.php', array('section' => 'tool_merge2users_settings'));
-        $groupelements[] = $mform->createElement('checkbox',
-                'settings_confirmed',
-                get_string('acknowledge_settings', 'tool_merge2users',
-                        \html_writer::link($settingsurl,
-                                get_string('settings'),
-                                array('section' => 'tool_merge2users_settings'))));
-        $mform->addGroup($groupelements,
-                'settings_group',
-                get_string('confirm_settings', 'tool_merge2users'));
-        $mform->addRule('settings_group', null, 'required');
-
-        // Second checkbox: Confirm users.
         if (empty($this->_customdata['baseuserid'])) {
             debugging(get_string('debug_no_baseuserid_provided', 'tool_merge2users'));
         }
@@ -76,19 +66,25 @@ class confirm_selection_form extends moodleform {
                 array('id' => $this->_customdata['mergeuserid']),
                 'id,firstname,lastname',
                 MUST_EXIST);
-        $baseuserurl = new \moodle_url('/user/profile.php', array('id' => $this->_customdata['baseuserid']));
-        $mergeuserurl = new \moodle_url('/user/profile.php', array('id' => $this->_customdata['mergeuserid']));
+        $baseuserurl = new moodle_url('/user/profile.php', array('id' => $this->_customdata['baseuserid']));
+        $mergeuserurl = new moodle_url('/user/profile.php', array('id' => $this->_customdata['mergeuserid']));
 
         $users = array();
-        $users['mergeuser'] = \html_writer::link($baseuserurl, $baseuser->firstname.' '.$baseuser->lastname);
-        $users['baseuser'] = \html_writer::link($mergeuserurl, $mergeuser->firstname.' '.$mergeuser->lastname);
+        $users['mergeuser'] = html_writer::link($baseuserurl, $baseuser->firstname.' '.$baseuser->lastname);
+        $users['baseuser'] = html_writer::link($mergeuserurl, $mergeuser->firstname.' '.$mergeuser->lastname);
 
-        $groupelements = array();
-        $groupelements[] = $mform->createElement('checkbox',
-                'users_confirmed',
+        $settingsurl = new moodle_url('/admin/settings.php', array('section' => 'tool_merge2users_settings'));
+
+        $mform->addElement('checkbox', 'settings_confirmed', get_string('confirm_settings', 'tool_merge2users'),
+                get_string('acknowledge_settings', 'tool_merge2users', html_writer::link(
+                        $settingsurl, get_string('settings'), array('section' => 'tool_merge2users_settings'))));
+        $mform->addElement('checkbox', 'users_confirmed', get_string('confirm_users', 'tool_merge2users'),
                 get_string('acknowledge_users', 'tool_merge2users', $users));
-        $mform->addGroup($groupelements, 'users_group', get_string('confirm_users', 'tool_merge2users'));
-        $mform->addRule('users_group', null, 'required');
+        $mform->addElement('checkbox', 'perform_dryrun', get_string('perform_dryrun', 'tool_merge2users'),
+                get_string('trans_will_rollback', 'tool_merge2users'));
+
+        $mform->addRule('settings_confirmed', null, 'required', null, 'client');
+        $mform->addRule('users_confirmed', null, 'required', null, 'client');
 
         $this->add_action_buttons(false, get_string('start_merging', 'tool_merge2users'));
     }

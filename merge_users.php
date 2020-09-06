@@ -18,11 +18,12 @@
  * Starts and displays the merging process.
  *
  * @package   tool_merge2users
- * @copyright 2020, Carsten Schöffel <carsten.schoeffel@cs.hs-fulda.de>, 1999 onwards Martin Dougiamas (http://dougiamas.com)
+ * @copyright 2020, Carsten Schöffel <carsten.schoeffel@cs.hs-fulda.de>
+ * @copyright 1999 onwards Martin Dougiamas (http://dougiamas.com)
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-use tool_merge2users\merge\process\merge_process;
+use tool_merge2users\process\merge_process;
 use tool_merge2users\helper;
 
 require_once(__DIR__ . '/../../../config.php');
@@ -33,6 +34,9 @@ admin_externalpage_setup('tool_merge2users_merge_user');
 
 // Check transaction support.
 helper::enforce_database_transactions();
+
+// Check if dry run option has been set.
+$dryrun = required_param('perform_dryrun', PARAM_INT);
 
 $url = new moodle_url('/admin/tool/merge2users/merge_users.php');
 $title = get_string('pluginname', 'tool_merge2users');
@@ -45,7 +49,7 @@ $PAGE->set_title($title);
 $PAGE->set_heading($title);
 $PAGE->requires->js_init_code("window.scrollTo(0, 5000000);");
 
-// Check if users have been set and are valid.
+// Check if users have been set.
 $baseuserid = $cache->get('baseuserid');
 if (!$baseuserid || $baseuserid <= 0) {
     redirect($CFG->wwwroot.'/admin/tool/merge2users/select_base_user.php',
@@ -60,9 +64,38 @@ if (!$mergeuserid || $baseuserid <= 0) {
             null,
             \core\output\notification::NOTIFY_WARNING);
 }
-$mergeprocess = new merge_process($baseuserid, $mergeuserid, $context);
+
+// Check if the users are valid.
+if (!$DB->record_exists('user', array('id' => $baseuserid))) {
+    redirect(new moodle_url('/admin/tool/merge2users/select_base_user.php'),
+            get_string('baseuser_doesnt_exist', 'tool_merge2users'),
+            null,
+            \core\output\notification::NOTIFY_ERROR);
+}
+if (!$DB->record_exists('user', array('id' => $mergeuserid))) {
+    redirect(new moodle_url('/admin/tool/merge2users/select_merge_user.php'),
+            get_string('mergeuser_doesnt_exist', 'tool_merge2users'),
+            null,
+            \core\output\notification::NOTIFY_ERROR);
+}
+
+// TODO: Change last parameter to boolval(perform_dryrun).
+$mergeprocess = new merge_process($baseuserid, $mergeuserid, $context, true);
 
 echo $OUTPUT->header();
+
 $mergeprocess->perform();
+// TODO: Replace with dryrun option.
+if (true) {
+    $url = new moodle_url('/admin/tool/merge2users/merge_users.php',
+            array('baseuserid' => $baseuserid, 'mergeuserid' => $mergeuserid, 'perform_dryrun' => false));
+    $button = new single_button($url, get_string('perform_merge', 'tool_merge2users'), 'post', true);
+    echo $OUTPUT->render($button);
+} else {
+    $url = new moodle_url('/admin/tool/merge2users/select_base_user.php');
+    $button = new single_button($url, get_string('merge_another', 'tool_merge2users'), 'post', true, array('id' => 'anotheruser'));
+    echo $OUTPUT->render($button);
+}
+
 echo $OUTPUT->footer();
 

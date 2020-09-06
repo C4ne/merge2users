@@ -15,7 +15,7 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Contains the abstract select_user_page class.
+ * Contains the helper class.
  *
  * @copyright 2020, Carsten Schöffel <carsten.schoeffel@cs.hs-fulda.de>
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
@@ -24,6 +24,11 @@
 
 namespace tool_merge2users;
 
+use coding_exception;
+use dml_exception;
+use moodle_exception;
+use moodle_url;
+use ReflectionException;
 use ReflectionMethod;
 
 /**
@@ -36,10 +41,10 @@ use ReflectionMethod;
 class helper {
 
     /**
-     * Workaround to be able to check wether or not the current database supports transactions.
+     * Workaround to be able to check whether or not the current database supports transactions.
      *
      * @return bool Wether or not the current database supports transactions
-     * @throws \ReflectionException
+     * @throws ReflectionException
      */
     public static function database_supports_transactions() {
         global $DB;
@@ -49,51 +54,23 @@ class helper {
     }
 
     /**
-     * Redirects if transactions not supported and user did not agree to take the risk
+     * Enforces that the user agrees to the risk of running this without support for transactions.
      *
-     * @throws \dml_exception
-     * @throws \moodle_exception
+     * @throws ReflectionException
+     * @throws coding_exception
+     * @throws dml_exception
+     * @throws moodle_exception
      */
     public static function enforce_database_transactions() {
         if (!self::database_supports_transactions()) {
             if (get_config('tool_merge2users', 'merge_without_transaction') === 0) {
-                $settingsurl = new \moodle_url('/admin/settings.php', array('section' => 'tool_merge2users_settings'));
-                redirect($settingsurl, 'Your database does not seem to support transactions');
-            }
-        }
-    }
-
-    /**
-     * Retrieves all tables of a specific plugin.
-     *
-     * @param string $xmlfilepath Full filepath to a xml file
-     * @return bool|array Array of xmldb_table objects or false if the file doesn't exist
-     * @throws \moodle_exception If file is not readable or not parsable
-     */
-    public static function get_tables_by_xml($xmlfilepath) {
-        global $CFG;
-        if (file_exists($xmlfilepath)) {
-            if (is_readable($xmlfilepath)) {
-                $xmldbfile = new \xmldb_file($xmlfilepath);
-                if ($xmldbfile->loadXMLStructure()) {
-                    $xmldbstructure = $xmldbfile->getStructure();
-
-                    $tables = array();
-                    foreach ($xmldbstructure->getTables() as $table) {
-                        $tables[$table->getName()] = $table;
-                    }
-                    return $tables;
+                $settingsurl = new moodle_url('/admin/settings.php', array('section' => 'tool_merge2users_settings'));
+                if (CLI_SCRIPT) {
+                    cli_error(get_string('cli_transactions_unsupported', 'tool_merge2users').': '.$settingsurl->out());
                 } else {
-                    $exceptionreason = 'invalidxmlfile';
+                    redirect($settingsurl, get_string('transactions_unsupported', 'tool_merge2users'));
                 }
-            } else {
-                $exceptionreason = 'filenotreadable';
             }
-        } else {
-            return false;
         }
-
-        throw new \moodle_exception($exceptionreason, 'merge_process',
-                $CFG->wwwroot.'/admin/tool/merge2users/select_base_user.php', $xmlfilepath);
     }
 }

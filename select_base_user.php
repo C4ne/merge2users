@@ -34,7 +34,6 @@ admin_externalpage_setup('tool_merge2users_select_base_user');
 // Check transaction support.
 helper::enforce_database_transactions();
 
-
 // Check if user ID's have been set.
 $baseuserid   = optional_param('baseuserid', 0, PARAM_INT);
 

@@ -24,6 +24,8 @@
 
 namespace tool_merge2users\event;
 
+use core\event\base;
+
 defined('MOODLE_INTERNAL') || die();
 
 /**
@@ -40,7 +42,7 @@ defined('MOODLE_INTERNAL') || die();
  *          - int   mergeuserid:    The user.id of the user to be merged in this merge process.
  * }
  */
-abstract class usermerge_merge extends \core\event\base {
+abstract class usermerge_merge extends base {
 
     /**
      * function init

@@ -22,6 +22,7 @@
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
+use core\output\notification;
 use tool_merge2users\output\select_merge_user_page;
 use tool_merge2users\helper;
 
@@ -65,7 +66,7 @@ if ($baseuserid > 0 ) {
         redirect($CFG->wwwroot.'/admin/tool/merge2users/select_base_user.php',
                 get_string('warning_pick_base_user', 'tool_merge2users'),
                 null,
-                \core\output\notification::NOTIFY_WARNING);
+                notification::NOTIFY_WARNING);
     } else {
         $baseuserid = $result;
     }
@@ -76,7 +77,7 @@ $result = $cache->get('mergeuserid');
 if ($result !== false) {
     if ($result === $baseuserid || $mergeuserid === $baseuserid) {
         \core\notification::add(get_string('warning_merge_user_unset', 'tool_merge2users'),
-                \core\output\notification::NOTIFY_WARNING);
+                notification::NOTIFY_WARNING);
         $cache->delete('mergeuserid');
     } else {
         $mergeuserid = $result;

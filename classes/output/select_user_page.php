@@ -24,6 +24,12 @@
 
 namespace tool_merge2users\output;
 
+use context;
+use html_table;
+use html_writer;
+use moodle_url;
+use user_filtering;
+
 defined('MOODLE_INTERNAL') || die();
 
 global $CFG;
@@ -43,7 +49,7 @@ require_once($CFG->libdir.'/outputcomponents.php');
  * TODO Implement a sorting and paging functionality for the table
  */
 abstract class select_user_page {
-    /** @var \moodle_url $nextpage The next page to link to in the table */
+    /** @var moodle_url $nextpage The next page to link to in the table */
     private $nextpage;
 
     /** @var integer $selecteduserid The user id that got selected */
@@ -67,13 +73,13 @@ abstract class select_user_page {
     /** @var string $heading The name of the heading for this particular page. Isn't the same as the 'normal' moodle heading */
     private $heading;
 
-    /** @var \context $context The context as seen by the calling php file */
+    /** @var context $context The context as seen by the calling php file */
     private $context;
 
     /**
      * select_user_page constructor.
      *
-     * @param \moodle_url $nextpage The next page to link to in the table
+     * @param moodle_url $nextpage The next page to link to in the table
      * @param integer $selecteduserid The user id that got selected
      * @param string $sort After what property should the table be sorted?
      * @param string $dir In what direction should the table be sorted?
@@ -81,7 +87,7 @@ abstract class select_user_page {
      * @param integer $perpage How many users should be displayed per page?
      * @param string $getparamname The name of the get parameter which transfert the id of the base/merge user
      * @param string $heading The name of the heading for this particular page. Isn't the same as the 'normal' moodle heading
-     * @param \context $context The context as seen by the calling php file
+     * @param context $context The context as seen by the calling php file
      */
     public function __construct($nextpage, $selecteduserid, $sort, $dir, $page, $perpage, $getparamname, $heading, $context) {
         $this->nextpage = $nextpage;
@@ -97,11 +103,9 @@ abstract class select_user_page {
 
     /**
      * Displays a user search to the page.
-     *
-     * @return array A list of users to display in the table
      */
     public function display_user_search() {
-        $userfilter = new \user_filtering();
+        $userfilter = new user_filtering();
 
         echo "<h2>" . $this->heading . "</h2>";
         $userfilter->display_add();
@@ -114,7 +118,7 @@ abstract class select_user_page {
      * @return array A list of users to pass to {@link display_select_user_table}
      */
     public function get_users() {
-        $userfilter = new \user_filtering();
+        $userfilter = new user_filtering();
         list($extrasql, $params) = $userfilter->get_sql_filter();
         $users = get_users_listing($this->sort, $this->dir, $this->page * $this->perpage, $this->perpage, '', '', '',
                 $extrasql, $params, $this->context);
@@ -128,7 +132,7 @@ abstract class select_user_page {
      * @param array $users The return of {@link render_user_search}
      */
     public function display_select_user_table($users) {
-        $table = new \html_table();
+        $table = new html_table();
         $table->head = array();
         $table->attributes['class'] = 'admintable generaltable table-sm';
 
@@ -157,15 +161,15 @@ abstract class select_user_page {
             $this->nextpage->param($this->getparamname , $user->id);
 
             // If a user has already been chosen: display it.
-            $selectlink = \html_writer::link($this->nextpage, get_string('select', 'core'));
+            $selectlink = html_writer::link($this->nextpage, get_string('select', 'core'));
             if ($user->id == $this->selecteduserid) {
-                $selectlink .= ' ('.\html_writer::span(get_string('selected', 'core_bulkusers')).')';
+                $selectlink .= ' ('. html_writer::span(get_string('selected', 'core_bulkusers')).')';
             }
             $data[] = $selectlink;
 
             $table->data[] = $data;
         }
 
-        echo \html_writer::table($table);
+        echo html_writer::table($table);
     }
 }

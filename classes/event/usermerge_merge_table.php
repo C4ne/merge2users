@@ -24,6 +24,8 @@
 
 namespace tool_merge2users\event;
 
+use core\event\base;
+
 defined('MOODLE_INTERNAL') || die();
 
 /**
@@ -39,7 +41,7 @@ defined('MOODLE_INTERNAL') || die();
  *          - string    table:  The name of the table (without prefix)
  * }
  */
-abstract class usermerge_merge_table extends \core\event\base {
+abstract class usermerge_merge_table extends base {
 
     /**
      * function init

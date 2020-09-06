@@ -1,7 +1,7 @@
 language: php
 
 addons:
-  postgresql: "9.5"
+  postgresql: "9.6"
 
 services:
   - mysql
@@ -14,31 +14,27 @@ cache:
     - $HOME/.npm
 
 php:
+ - 7.2
+ - 7.3
  - 7.4
 
 env:
-  global:
-    - IGNORE_PATHS=ignore
-    - IGNORE_NAMES=ignore_name.php
-    - MUSTACHE_IGNORE_NAMES=broken.mustache
-    - DB=pgsql
-    - MOODLE_BRANCH=master
+ global:
+  - MOODLE_BRANCH=MOODLE_39_STABLE
+ matrix:
+  - DB=pgsql
+  - DB=mysqli
 
 before_install:
   - phpenv config-rm xdebug.ini
-  - make init
-  # Mimic how a Moodle plugin would be run.
-  - cp -R tests/Fixture/moodle-local_travis ../moodle-local_travis
-  - export PATH="$(cd bin; pwd):$(cd vendor/bin; pwd):$PATH"
-  - export TRAVIS_BUILD_DIR=$(cd ../moodle-local_travis; pwd)
+  - cd ../..
+  - composer create-project -n --no-dev --prefer-dist moodlehq/moodle-plugin-ci ci ^3
+  - export PATH="$(cd ci/bin; pwd):$(cd ci/vendor/bin; pwd):$PATH"
 
 install:
-  - moodle-plugin-ci install -vvv
+  - moodle-plugin-ci install
 
 script:
-  - make test-phpunit
-
-  # This is basically "integration" testing.
   - moodle-plugin-ci phplint
   - moodle-plugin-ci phpcpd
   - moodle-plugin-ci phpmd
@@ -46,45 +42,7 @@ script:
   - moodle-plugin-ci validate
   - moodle-plugin-ci savepoints
   - moodle-plugin-ci mustache
-  - moodle-plugin-ci grunt || [ "$MOODLE_BRANCH" != 'master' -a "$MOODLE_BRANCH" != 'MOODLE_39_STABLE' ]
+  - moodle-plugin-ci grunt
   - moodle-plugin-ci phpdoc
-  - moodle-plugin-ci phpunit --coverage-text
-  - moodle-plugin-ci behat --profile default
-  - moodle-plugin-ci behat --profile chrome
-
-jobs:
-  include:
-    - stage: Tests
-      php: 7.3
-      before_install: skip
-      install:
-        - make init
-      script:
-        - make validate
-    - stage: Integration tests
-    - php: 7.4
-      env: MOODLE_BRANCH=MOODLE_39_STABLE
-    - php: 7.4
-      env: MOODLE_BRANCH=MOODLE_38_STABLE
-    - php: 7.3
-      env: MOODLE_BRANCH=MOODLE_37_STABLE
-    - php: 7.2
-      env: MOODLE_BRANCH=MOODLE_35_STABLE
-    - php: 7.0
-      env: MOODLE_BRANCH=MOODLE_35_STABLE
-    - stage: Deploy
-      if: tag IS present
-      before_install: skip
-      install: skip
-      script: skip
-      before_deploy:
-        - make build/moodle-plugin-ci.phar
-        - php build/moodle-plugin-ci.phar list
-      deploy:
-        provider: releases
-        api_key: $GITHUB_TOKEN
-        file: build/moodle-plugin-ci.phar
-        skip_cleanup: true
-        on:
-          repo: moodlehq/moodle-plugin-ci
-          tags: true
+  - moodle-plugin-ci phpunit
+  - moodle-plugin-ci behat

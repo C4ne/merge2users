@@ -23,7 +23,9 @@
  * @see \tool_merge2users\forms\confirm_selection_form
  */
 
+use core\output\notification;
 use tool_merge2users\forms\confirm_selection_form;
+use tool_merge2users\helper;
 
 require_once(__DIR__ . '/../../../config.php');
 require_once($CFG->libdir.'/adminlib.php');
@@ -38,7 +40,7 @@ helper::enforce_database_transactions();
 $baseuserid = optional_param('baseruserid', 0, PARAM_INT);
 $mergeuserid = optional_param('mergeuserid', 0, PARAM_INT);
 
-$url = new moodle_url('/admin/tool/merge2users/select_options.php');
+$url = new moodle_url('/admin/tool/merge2users/confirm_selection.php');
 $title = get_string('pluginname', 'tool_merge2users');
 $cache = cache::make('tool_merge2users', 'pickedusers');
 
@@ -54,7 +56,7 @@ if ($baseuserid <= 0 ) {
         redirect($CFG->wwwroot.'/admin/tool/merge2users/select_base_user.php',
                 get_string('warning_pick_base_user', 'tool_merge2users'),
                 null,
-                \core\output\notification::NOTIFY_WARNING);
+                notification::NOTIFY_WARNING);
     } else {
         $baseuserid = $result;
     }
@@ -68,7 +70,7 @@ if ($mergeuserid > 0 ) {
         redirect($CFG->wwwroot.'/admin/tool/merge2users/select_merge_user.php',
                 get_string('warning_pick_merge_user', 'tool_merge2users'),
                 null,
-                \core\output\notification::NOTIFY_WARNING);
+                notification::NOTIFY_WARNING);
     } else {
         $mergeuserid = $result;
     }
@@ -81,19 +83,21 @@ if ($baseuserid == $mergeuserid) {
         redirect($CFG->wwwroot.'/admin/tool/merge2users/select_base_user.php',
                 get_string('warning_pick_base_user', 'tool_merge2users'),
                 null,
-                \core\output\notification::NOTIFY_WARNING);
+                notification::NOTIFY_WARNING);
     } else {
         redirect(new moodle_url('/admin/tool/merge2users/select_base_user.php'),
                 get_string('warning_select_two_different_users', 'tool_merge2users'),
                 null,
-                \core\output\notification::NOTIFY_WARNING);
+                notification::NOTIFY_WARNING);
     }
+}
+$selectoptionsform = new confirm_selection_form(null, array('baseuserid' => $baseuserid, 'mergeuserid' => $mergeuserid));
+
+if ($data = $selectoptionsform->get_data()) {
+    $params = array('perform_dryrun' => $data->perform_dryrun);
+    redirect(new moodle_url('/admin/tool/merge2users/merge_users.php', $params));
 }
 
 echo $OUTPUT->header();
-
-$mergeusersurl = $CFG->wwwroot.'/admin/tool/merge2users/merge_users.php';
-$selectoptionsform = new confirm_selection_form($mergeusersurl, array('baseuserid' => $baseuserid, 'mergeuserid' => $mergeuserid));
 $selectoptionsform->display();
-
 echo $OUTPUT->footer();

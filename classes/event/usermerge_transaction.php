@@ -24,6 +24,8 @@
 
 namespace tool_merge2users\event;
 
+use core\event\base;
+
 defined('MOODLE_INTERNAL') || die();
 
 /**
@@ -33,7 +35,7 @@ defined('MOODLE_INTERNAL') || die();
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  * @package tool_merge2users
  */
-abstract class usermerge_transaction extends \core\event\base {
+abstract class usermerge_transaction extends base {
 
     /**
      * function init

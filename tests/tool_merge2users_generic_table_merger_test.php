@@ -14,21 +14,10 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
-/**
- * Version information.
- *
- * @package   tool_merge2users
- * @copyright 2020, Carsten Schöffel <carsten.schoeffel@cs.hs-fulda.de>
- * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
- */
+// TODO ...
+class tool_merge2users_generic_table_merger_test extends advanced_testcase {
 
-defined('MOODLE_INTERNAL') || die();
+    public function test_get_selector_for_rows_one_column_multiple_rows_() {
 
-$plugin->version = 2020070100.09;
-$plugin->requires = 2020061500.03;
-// TODO Probably my biggest mistake. Check if numbers are allowed in plugin names.
-/** @var object $plugin */
-$plugin->component = 'tool_merge2users';
-$plugin->maturity = MATURITY_ALPHA;
-$plugin->release = 'v0.1';
-$plugin->dependencies = [];
+    }
+}

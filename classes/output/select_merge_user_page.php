@@ -26,6 +26,9 @@ namespace tool_merge2users\output;
 
 defined('MOODLE_INTERNAL') || die();
 
+use context;
+use moodle_exception;
+use moodle_url;
 use renderable;
 
 /**
@@ -44,11 +47,12 @@ class select_merge_user_page extends select_user_page implements renderable {
      * @param string $dir In what direction should the table be sorted?
      * @param integer $page On which page of the user search table are we on?
      * @param integer $perpage How many users should be displayed per page?
-     * @param \context $context The context as seen by the calling php file
+     * @param context $context The context as seen by the calling php file
      * @param integer $selecteduserid The user id that got selected
+     * @throws moodle_exception
      */
     public function __construct($sort, $dir, $page, $perpage, $context, $selecteduserid) {
-        $nextpage  = new \moodle_url('/admin/tool/merge2users/confirm_selection.php');
+        $nextpage  = new moodle_url('/admin/tool/merge2users/confirm_selection.php');
         $getparamname = 'mergeuserid';
         $heading = get_string('page_merge_user_heading', 'tool_merge2users');
         parent::__construct($nextpage, $selecteduserid, $sort, $dir, $page, $perpage, $getparamname, $heading, $context);

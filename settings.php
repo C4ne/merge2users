@@ -26,7 +26,11 @@
 
 defined('MOODLE_INTERNAL') || die;
 
+use tool_merge2users\helper;
+use tool_merge2users\merger\system_table_merger;
+
 global $ADMIN;
+/** @var admin_root $ADMIN */
 
 // Register a admin category for this plugin.
 $ADMIN->add('accounts',
@@ -50,7 +54,7 @@ $ADMIN->add('tool_merge2users_index',
                 'tool/merge2users:mergeusers',
                 true));
 
-// Register confirm selection page as admin externalpage.
+// Register 'confirm selection' page as admin externalpage.
 $ADMIN->add('tool_merge2users_index',
         new admin_externalpage('tool_merge2users_confirm_selection',
                 get_string('page_confirm_selection_heading', 'tool_merge2users'),
@@ -58,10 +62,10 @@ $ADMIN->add('tool_merge2users_index',
                 'tool/merge2users:mergeusers',
                 true));
 
-// Register merge user page as admin externalpage.
+// Register 'merge user' page as admin externalpage.
 $ADMIN->add('tool_merge2users_index',
         new admin_externalpage('tool_merge2users_merge_user',
-                get_string('page_merge_heading', 'tool_merge2users'),
+                get_string('merging_users', 'tool_merge2users'),
                 $CFG->wwwroot.'/admin/tool/merge2users/merge_users.php',
                 'tool/merge2users:mergeusers',
                 true));
@@ -76,14 +80,14 @@ $settings->add(new admin_setting_heading('tool_merge2users_heading',
         get_string('generalsettings', 'core_admin'),
         get_string('pluginname', 'tool_merge2users').' '.get_string('options')));
 
-// Disable plugins setting.
+// Disable plugins setting (Currently not in use).
 // Builds a 2d array where the first dimension is the type and the second one the pluginname.
-$plugintypes = \core_component::get_plugin_types();
+$plugintypes = core_component::get_plugin_types();
 $pluginsbytype = array();
 foreach ($plugintypes as $type => $dir) {
     $pluginsbytype[$type] = array_map(function($plugindir) {
         return basename($plugindir);
-    }, \core_component::get_plugin_list($type));
+    }, core_component::get_plugin_list($type));
 }
 
 // TODO: Should all plugins that do not hold user records be disabled by default?
@@ -94,7 +98,7 @@ $settings->add(new admin_setting_configmultiselect('tool_merge2users/disable_plu
         $pluginsbytype));
 
 // Only add this section if the current database does not support transactions.
-if (!\tool_merge2users\helper::database_supports_transactions()) {
+if (!helper::database_supports_transactions()) {
     $settings->add(new admin_setting_configcheckbox('tool_merge2users/merge_without_transaction',
             get_string('merge_without_transactions', 'tool_merge2users'),
             get_string('merge_without_transactions_desc', 'tool_merge2users'),
@@ -104,7 +108,7 @@ if (!\tool_merge2users\helper::database_supports_transactions()) {
 // Gets the settings for merging core tables.
 $settings->add(new admin_setting_heading('tool_merge2users/system_settings_heading', get_string('sitesettings'), ''));
 $fakesettingpage = new admin_settingpage('tool_merge2users/', 'system_settings');
-$systemsettings = \tool_merge2users\merge\tables\system_table_merger::deliver_merge_options($fakesettingpage);
+system_table_merger::deliver_merge_options($fakesettingpage);
 foreach ($fakesettingpage->settings as $systemmergesetting) {
     $systemmergesetting->plugin = 'tool_merge2users';
     $settings->add($systemmergesetting);
@@ -129,6 +133,8 @@ if (!empty($pluginswithfunction)) {
                 $settings->add(new admin_setting_heading($frankenstein.'_heading',
                         $frankensteinsettings,
                         get_string('pluginname', $frankenstein).' '.get_string('settings')));
+                /** @var admin_setting $pluginmergesetting */
+                // TODO: Do this on the outside of this loop or remove the need to pass the settingpage by reference.
                 foreach ($fakesettingpage->settings as $pluginmergesetting) {
                     if (substr($pluginmergesetting->get_full_name(), 0, strlen($frankenstein)) === $frankenstein) {
                         throw new coding_exception('Setting has the wrong prefix',
