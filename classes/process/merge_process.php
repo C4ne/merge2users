@@ -199,8 +199,8 @@ class merge_process {
 
         // First: Merge core tables.
         echo $OUTPUT->heading(get_string('coresystem'));
+        $systemmerger = new system_table_merger($this->_baseuserid, $this->_mergeuserid);
         try {
-            $systemmerger = new system_table_merger($this->_baseuserid, $this->_mergeuserid);
             $queriespertable = $systemmerger->get_queries_per_table();
         } catch (moodle_exception $ex) {
             $a = new \stdClass();
@@ -262,8 +262,9 @@ class merge_process {
         echo $OUTPUT->heading(get_string('other_tables', 'tool_merge2users'));
         foreach (array_diff($alltables, $this->_processedtables) as $table) {
 
+            $merger = new generic_table_merger($table, $this->_baseuserid, $this->_mergeuserid);
+            // TODO: Set xmlfilepath for better auto-detection of the user columns.
             try {
-                $merger = new generic_table_merger($table, $this->_baseuserid, $this->_mergeuserid);
                 $queries = $merger->get_queries();
             } catch (dml_exception $ex) {
                 eventnotification::trigger_merge_table_failure($table);

@@ -36,6 +36,8 @@ use xmldb_table;
 
 defined('MOODLE_INTERNAL') || die();
 
+// TODO: Look out for columns that get referenced as a FOREIGN key.
+
 /**
  * A merger that tries to obtain as much data as possible. If a row causes a conflict, it gets removed though.
  *
@@ -53,15 +55,15 @@ class generic_table_merger {
     /** @var int $_mergeuserid A reference to user.id of the user to be merged */
     private $_mergeuserid;
 
-    /** @var string The table that this merger should process */
+    /** @var string The name of the table that this merger should process */
     private $_tablename;
 
     /** @var array $_usercolumns An array of strings containing names of columns holding a reference to the user.id column */
     private $_usercolumns;
 
     /**
-     * @var array $_conflictingconstraints An array of arrays holding the names of columns that are in a UNIQUE constraint that
-     * could potentially cause a conflict.
+     * @var array $_conflictingconstraints An array of arrays holding the names of columns that are in a UNIQUE constraint (which
+     * could potentially cause a conflict).
      *
      * Conflicting constraints are UNIQUE keys, indexes, PRIMARY keys or FOREIGN UNIQUE keys that are composed of at least
      * one column that contains a reference to the user.id column.
@@ -70,52 +72,68 @@ class generic_table_merger {
 
     /**
      * @var string $_xmlfilepath Used for better auto-detection of columns that hold a reference to user.id. If you want to use this
-     * for your plugin please instead use the $usercolumns parameter of the constructor!
+     * for your plugin please use instead the $usercolumns parameter of the constructor!
      */
-    public $_xmlfilepath = '';
+    public $_xmlfilepath;
 
     /**
      * generic_table_merger constructor.
      *
-     * @param string $tablename The table that this merger should process
+     * @param string $tablename The name of the table that this merger should process
      * @param int $baseuserid A reference to user.id of the base user
      * @param int $mergeuserid A reference to user.id of the user to be merged
-     * @param array $usercolumns An array listing all names of columns that hold a reference to the user.id column
-     * @throws moodle_exception If the xmlfile is not readable, not parsable or does not exist
+     * @param array $usercolumns An array listing all names of columns that MUST hold a reference to the user.id column
      */
     public function __construct($tablename, $baseuserid, $mergeuserid, $usercolumns = array()) {
         $this->_tablename = $tablename;
         $this->_baseuserid = $baseuserid;
         $this->_mergeuserid = $mergeuserid;
-        if (empty($usercolumns)) {
-            $this->set_user_columns();
-        } else {
-            $this->_usercolumns = $usercolumns;
-        }
+        $this->_usercolumns = $usercolumns;
     }
 
     /**
-     * Returns and array of sql queries and their parameters. Use this to merge the table of this instance.
+     * Returns an array of sql queries and their parameters. Use this to merge the datasets of this table.
      *
      * @return array An array of arrays holding the sql under the 'sql' key and another array under the 'params' key for the params
-     * @throws dml_exception
+     * @throws dml_exception If something goes wrong processing the tables
+     * @throws moodle_exception If the xmlfile is not readable, not parsable or does not exist
      */
     public function get_queries() {
         global $DB;
 
         $queries = array();
 
+        if (empty($usercolumns)) {
+            $this->set_user_columns();
+        }
+
         if (!empty($this->_usercolumns)) {
-            // First: Remove all conflicting rows in this table.
-            $conflictingrows = $this->get_conflicts();
-            if (!empty($conflictingrows)) {
-                $whereidsequal = implode(' OR ', array_map(function($row) {
-                    return "id=".$row->id;
-                }, $conflictingrows));
-                $query = new stdClass();
-                $query->sql = "DELETE FROM {".$this->_tablename."} WHERE ".$whereidsequal;
-                $query->params = null;
-                $queries[] = $query;
+            // This var can also hold UNIQUE or FOREIGN-UNIQUE keys. But doesnt include the primary key.
+            $indexes = $DB->get_indexes($this->_tablename);
+
+            foreach ($indexes as $indexname => $index) {
+                if ($index['unique']) {
+                    if (!empty(array_intersect($this->_usercolumns, $index['columns']))) {
+                        $this->_conflictingconstraints[$indexname] = $index['columns'];
+                    }
+                }
+            }
+
+            $conflictingrows = array();
+
+            if (!empty($this->_conflictingconstraints)) {
+                // First: Remove all conflicting rows in this table.
+                $conflictingrows = $this->get_conflicts();
+                if (!empty($conflictingrows)) {
+                    $whereidsequal = implode(' OR ', array_map(function($row) {
+                        return "id=".$row->id;
+                    }, $conflictingrows));
+                    $query = new stdClass();
+                    $query->sql = "DELETE FROM {".$this->_tablename."} WHERE ".$whereidsequal;
+                    $query->params = null;
+                    $queries[] = $query;
+                }
+
             }
 
             $selectusercolumns = array();
@@ -161,25 +179,12 @@ class generic_table_merger {
      * - That column is part of a 'conflicting constraint'
      * - There are two rows that hold the same values for all columns in that conflicting constraint (minus the the user column(s))
      *
-     * TODO: Look out for columns that get referenced as a FOREIGN key.
-     *
      * @return array An array of arrays containing conflict objects. The keys of the first layer are the names of the constraints
      * @throws dml_exception
      */
     private function get_conflicts() {
         global $DB;
         $conflicts = array();
-
-        // Don't get confused as did I. This var can also hold UNIQUE or FOREIGN-UNIQUE keys. But does not include the primary key.
-        $indexes = $DB->get_indexes($this->_tablename);
-
-        foreach ($indexes as $indexname => $index) {
-            if ($index['unique']) {
-                if (!empty(array_intersect($this->_usercolumns, $index['columns']))) {
-                    $this->_conflictingconstraints[$indexname] = $index['columns'];
-                }
-            }
-        }
 
         // We already checked in the calling function if usercolumns is empty.
         if (!empty($this->_conflictingconstraints)) {
@@ -317,7 +322,7 @@ class generic_table_merger {
     }
 
     /**
-     * Returns all tables that are defined in the xml file. Only used to get all columns that hold a reference to user.id .
+     * Returns the table of this instance as a xmldb_table object. Only used to get all columns that hold a reference to user.id .
      *
      * @param string $xmlfilepath Full filepath to a install.xml file
      * @return xmldb_table The table you want to work with

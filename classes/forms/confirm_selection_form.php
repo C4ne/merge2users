@@ -66,13 +66,15 @@ class confirm_selection_form extends moodleform {
                 array('id' => $this->_customdata['mergeuserid']),
                 'id,firstname,lastname',
                 MUST_EXIST);
+
+        // Build the links to the user profiles.
         $baseuserurl = new moodle_url('/user/profile.php', array('id' => $this->_customdata['baseuserid']));
         $mergeuserurl = new moodle_url('/user/profile.php', array('id' => $this->_customdata['mergeuserid']));
-
         $users = array();
         $users['mergeuser'] = html_writer::link($baseuserurl, $baseuser->firstname.' '.$baseuser->lastname);
         $users['baseuser'] = html_writer::link($mergeuserurl, $mergeuser->firstname.' '.$mergeuser->lastname);
 
+        // Link to the settings page.
         $settingsurl = new moodle_url('/admin/settings.php', array('section' => 'tool_merge2users_settings'));
 
         $mform->addElement('checkbox', 'settings_confirmed', get_string('confirm_settings', 'tool_merge2users'),

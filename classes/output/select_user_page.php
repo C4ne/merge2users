@@ -38,6 +38,7 @@ require_once($CFG->dirroot.'/user/filters/lib.php');
 require_once($CFG->libdir.'/outputcomponents.php');
 
 // TODO Implement a sorting and paging functionality for the table.
+// TODO Reset the search after a user has been selected.
 
 /**
  * Abstract class for the select base/merge user pages.

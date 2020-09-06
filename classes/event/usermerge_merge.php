@@ -29,7 +29,7 @@ use core\event\base;
 defined('MOODLE_INTERNAL') || die();
 
 /**
- * These events will be triggered everytime two users have been merged
+ * These events will be triggered every time two users have been merged
  *
  * @copyright 2020, Carsten Schöffel <carsten.schoeffel@cs.hs-fulda.de>
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later

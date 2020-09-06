@@ -104,6 +104,5 @@ if (!$options['confirm-settings']) {
 
 helper::enforce_database_transactions();
 
-// TODO: Change dryrun variable. Its set to true for development purposes.
-$process = new merge_process($options['baseuser'], $options['mergeuser'], context_system::instance(), true);
+$process = new merge_process($options['baseuser'], $options['mergeuser'], context_system::instance(), !$options['run']);
 $process->perform();

@@ -27,7 +27,7 @@ namespace tool_merge2users\event;
 defined('MOODLE_INTERNAL') || die();
 
 /**
- * This event will be triggered everytime a merge of two users has failed
+ * This event will be triggered every time a merge of two users has failed
  *
  * @copyright 2020, Carsten Schöffel <carsten.schoeffel@cs.hs-fulda.de>
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later

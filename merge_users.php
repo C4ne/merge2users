@@ -36,7 +36,7 @@ admin_externalpage_setup('tool_merge2users_merge_user');
 helper::enforce_database_transactions();
 
 // Check if dry run option has been set.
-$dryrun = required_param('perform_dryrun', PARAM_INT);
+$dryrun = required_param('perform_dryrun', PARAM_BOOL);
 
 $url = new moodle_url('/admin/tool/merge2users/merge_users.php');
 $title = get_string('pluginname', 'tool_merge2users');
@@ -79,14 +79,12 @@ if (!$DB->record_exists('user', array('id' => $mergeuserid))) {
             \core\output\notification::NOTIFY_ERROR);
 }
 
-// TODO: Change last parameter to boolval(perform_dryrun).
-$mergeprocess = new merge_process($baseuserid, $mergeuserid, $context, true);
+$mergeprocess = new merge_process($baseuserid, $mergeuserid, $context, $dryrun);
 
 echo $OUTPUT->header();
 
 $mergeprocess->perform();
-// TODO: Replace with dryrun option.
-if (true) {
+if ($dryrun) {
     $url = new moodle_url('/admin/tool/merge2users/merge_users.php',
             array('baseuserid' => $baseuserid, 'mergeuserid' => $mergeuserid, 'perform_dryrun' => false));
     $button = new single_button($url, get_string('perform_merge', 'tool_merge2users'), 'post', true);

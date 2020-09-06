@@ -38,7 +38,7 @@ use plugin_renderer_base;
 class renderer extends plugin_renderer_base {
 
     /**
-     * Renders the page to select the merge or the base user.
+     * Renders the page to select the user to be merged or the base user.
      *
      * @param select_base_user_page|select_merge_user_page $page The page to be rendered.
      */
