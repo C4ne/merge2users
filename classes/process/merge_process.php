@@ -42,6 +42,9 @@ use dml_transaction_exception;
 use moodle_exception;
 use coding_exception;
 
+// TODO: Set debugging options for more verbose output for the user ($CFG->debug) ?
+// TODO: Do something against these weird try-catch blocks that rethrow the catched exception.
+
 /**
  * The class that takes care of the merging process.
  *
@@ -52,8 +55,6 @@ use coding_exception;
  * @copyright 2020, Carsten Schöffel <carsten.schoeffel@cs.hs-fulda.de>
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-// TODO: Set debugging options for more verbose output for the user ($CFG->debug) ?
-// TODO: Do something against these weird try-catch blocks that rethrow the catched exception.
 class merge_process {
 
     /** @var int $_baseuserid A reference to the user.id column for the base user */
@@ -169,8 +170,6 @@ class merge_process {
      * @throws coding_exception
      */
     public function perform() {
-        global $OUTPUT;
-
         $exception = null;
         try {
             $this->merge_users();

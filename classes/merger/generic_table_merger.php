@@ -103,9 +103,6 @@ class generic_table_merger {
     public function get_queries() {
         global $DB;
 
-        if ($this->_tablename == 'hvp_auth') {
-            $test = 'test';
-        }
         $queries = array();
 
         if (!empty($this->_usercolumns)) {
@@ -186,28 +183,29 @@ class generic_table_merger {
 
         // We already checked in the calling function if usercolumns is empty.
         if (!empty($this->_conflictingconstraints)) {
-            foreach ($this->_conflictingconstraints as $conflictname => $conflict) {
+            foreach ($this->_conflictingconstraints as $conflict) {
                 foreach ($this->power_set($this->_usercolumns) as $columncombination) {
                     $identforsametableone = "a";
                     $identforsametabletwo = "b";
 
-                    $columnswithsamevalues = array_diff($conflict, $columncombination);
+                    // Every column must have the same value on two distinct rows.
+                    $samevalues = array_diff($conflict, $columncombination);
                     // Example: a.otherfield1=b.otherfield1 AND a.otherfield2=b.other field2 AND a.otherfield3=a.otherfield3 ...
                     $samevaluesjoin  = " ON " . implode(" AND ",
                                     array_map(function($elem) use ($identforsametableone, $identforsametabletwo) {
                                         return $identforsametableone.".".$elem."=".$identforsametabletwo.".".$elem;
-                                    }, $columnswithsamevalues));
+                                    }, $samevalues));
 
                     $params = array_merge(
                             array_fill(0, count($columncombination), $this->_baseuserid),
                             array_fill(0, count($columncombination), $this->_mergeuserid));
 
-                    if (empty($columnswithsamevalues)) {
+                    if (empty($samevalues)) {
                         /*
                          * This is the case when there are only user columns in this constraint and we search for rows where all
                          * of them are either base user id or merge user id
                          */
-                        $columnswithsamevalues = $columncombination;
+                        $samevalues = $columncombination;
 
                         // We do not need to specify columns for a JOIN because there can only be one row in either JOIN table.
                         $samevaluesjoin = '';
@@ -226,7 +224,7 @@ class generic_table_merger {
                         }
                     }
 
-                    $samevaluesselect = implode(', ', $columnswithsamevalues);
+                    $samevaluesselect = implode(', ', $samevalues);
 
                     // Example: userfield1=? AND userfield2=? ...
                     $whereuserid = implode(' AND ', array_map(function($column) {

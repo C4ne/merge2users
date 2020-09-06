@@ -29,6 +29,8 @@ defined('MOODLE_INTERNAL') || die();
 use admin_settingpage;
 use tool_merge2users\merge_table;
 
+// TODO: Add a PHPUnit test that checks if there exists a function for every table in /lib/db/install.xml .
+
 /**
  * A merger that provides the sql to merge the data of all core tables.
  *
@@ -36,7 +38,6 @@ use tool_merge2users\merge_table;
  * @copyright 2020, Carsten Schöffel <carsten.schoeffel@cs.hs-fulda.de>
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-// TODO: Add a PHPUnit test that checks if there exists a function for every table in /lib/db/install.xml
 class system_table_merger {
     /** @var int $baseuserid A reference to user.id of the base user */
     protected $baseuserid;
