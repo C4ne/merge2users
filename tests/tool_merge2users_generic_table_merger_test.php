@@ -14,7 +14,21 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
-// TODO ...
+/**
+ * File containing the tool_merge2users_generic_table_merger_test class.
+ *
+ * @package   tool_merge2users
+ * @copyright 2020, Carsten Schöffel <carsten.schoeffel@cs.hs-fulda.de>
+ * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
+
+/**
+ * Tests for the generic_table_merger class
+ *
+ * @package   tool_merge2users
+ * @copyright 2020, Carsten Schöffel <carsten.schoeffel@cs.hs-fulda.de>
+ * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
 class tool_merge2users_generic_table_merger_test extends advanced_testcase {
 
     public function test_get_selector_for_rows_one_column_multiple_rows_() {

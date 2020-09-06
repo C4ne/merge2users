@@ -109,8 +109,8 @@ class eventnotification {
         echo $OUTPUT->render($eventnotification->_notification);
     }
 
-    /*
-     * Convenience functions. The code if even shorter this way. May resolve these functions later on.
+    /**
+     * Displays a notification that the transaction failed and triggers the matching event.
      */
     public static function trigger_transaction_failure() {
         self::trigger_output('usermerge_transaction_failure',
@@ -118,11 +118,20 @@ class eventnotification {
                 notification::NOTIFY_ERROR);
     }
 
+    /**
+     * Displays a notification that the transaction succeeded and triggers the matching event.
+     */
     public static function trigger_transaction_success() {
         self::trigger_output('usermerge_transaction_success',
                 'event_transaction_success_desc');
     }
 
+    /**
+     * Displays a notification that the merge failed and triggers the matching event.
+     *
+     * @param int $baseuserid The id of the base user
+     * @param int $mergeuserid The id of the user to be merged
+     */
     public static function trigger_merge_failure($baseuserid, $mergeuserid) {
         $a = new stdClass();
         $a->baseuserid = $baseuserid;
@@ -134,6 +143,12 @@ class eventnotification {
 
     }
 
+    /**
+     * Displays a notification that the merge succeeded and triggers the matching event.
+     *
+     * @param int $baseuserid The id of the base user
+     * @param int $mergeuserid The id of the user to be merged
+     */
     public static function trigger_merge_success($baseuserid, $mergeuserid) {
         $a = new stdClass();
         $a->baseuserid = $baseuserid;
@@ -144,6 +159,11 @@ class eventnotification {
                 $a);
     }
 
+    /**
+     * Displays a notification that the merge of the datasets of this table failed and triggers the matching event.
+     *
+     * @param string $tablename The name of the table.
+     */
     public static function trigger_merge_table_failure($tablename) {
         self::trigger_output('usermerge_merge_table_failure',
                 'event_table_merged_failure_desc',
@@ -152,6 +172,11 @@ class eventnotification {
                 array('table' => $tablename));
     }
 
+    /**
+     * Displays a notification that the merge of the datasets of this table succeeded and triggers the matching event.
+     *
+     * @param string $tablename The name of the table.
+     */
     public static function trigger_merge_table_success($tablename) {
         self::trigger_output('usermerge_merge_table_success',
                 'event_table_merged_success_desc',

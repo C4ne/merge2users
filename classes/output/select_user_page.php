@@ -41,13 +41,13 @@ require_once($CFG->libdir.'/outputcomponents.php');
  * Abstract class for the select base/merge user pages.
  *
  * This class provides the base functionality to render a search for users and a table
- * to display the users. Most of this is from the {{@link admin/user.php}} file.
+ * to display the users. Most of this is from the {@see admin/user.php} file.
  *
+ * @package tool_merge2users
  * @copyright 2020, Carsten Schöffel <carsten.schoeffel@cs.hs-fulda.de>
  * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
- * @package tool_merge2users
- * TODO Implement a sorting and paging functionality for the table
  */
+// TODO Implement a sorting and paging functionality for the table.
 abstract class select_user_page {
     /** @var moodle_url $nextpage The next page to link to in the table */
     private $nextpage;
@@ -115,7 +115,7 @@ abstract class select_user_page {
     /**
      * Returns a list of all users pagewise.
      *
-     * @return array A list of users to pass to {@link display_select_user_table}
+     * @return array A list of users to pass to {@see display_select_user_table}
      */
     public function get_users() {
         $userfilter = new user_filtering();
@@ -129,7 +129,7 @@ abstract class select_user_page {
     /**
      * Given the filtered users, displays the result table.
      *
-     * @param array $users The return of {@link render_user_search}
+     * @param array $users The return of {@see render_user_search()}
      */
     public function display_select_user_table($users) {
         $table = new html_table();

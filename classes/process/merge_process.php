@@ -48,12 +48,12 @@ use coding_exception;
  * Creates a lock, database transaction, takes care of logging anything, determines which tables should be merged and by whom,
  * executes the sql queries, displays the result to the user.
  *
+ * @package tool_merge2users
  * @copyright 2020, Carsten Schöffel <carsten.schoeffel@cs.hs-fulda.de>
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
- * @package tool_merge2users
- * TODO: Set debugging options for more verbose output for the user ($CFG->debug) ?
- * TODO: Do something against these weird try-catch blocks that rethrow the catched exception.
  */
+// TODO: Set debugging options for more verbose output for the user ($CFG->debug) ?
+// TODO: Do something against these weird try-catch blocks that rethrow the catched exception.
 class merge_process {
 
     /** @var int $_baseuserid A reference to the user.id column for the base user */
